@@ -35,10 +35,10 @@ and another to actually verify those elements.
      :verify  contains?}))
 ```
 
-Now, if this is invariant is run against a piece of data, all elements matching
-the [specter][specter] navigator `:sources` will be collected and used to
-generate an internal verification state using `:reduce` and `:state` – in this
-case, a set of all `:name` keys within `:declarations`.
+Now, if this invariant is run against a piece of data, all elements matching the
+[specter][specter] navigator `:sources` will be collected and used to generate
+an internal verification state using `:reduce` and `:state` – in this case, a
+set of all `:name` keys within `:declarations`.
 
 Then, `:targets` is used to find elements to verify, running `:verify` on every
 single one. Here, we ensure that every variable `:name` within `:body` is
