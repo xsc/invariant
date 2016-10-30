@@ -41,7 +41,7 @@ generate an internal verification state using `:reduce` and `:state` – in this
 case, a set of all `:name` keys within `:declarations`.
 
 Then, `:targets` is used to find elements to verify, running `:verify` on every
-single one – here, we ensure that every variable name within `:body` is
+single one. Here, we ensure that every variable `:name` within `:body` is
 contained in our previously generated set.
 
 Let's see it in action:
