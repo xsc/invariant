@@ -80,7 +80,7 @@ Note that the following passes our previous invariant without problem:
 ;; => nil
 ```
 
-Invariants do structural validation for you, so you should pair them with
+Invariants can't do structural validation for you, so you should pair them with
 something like [clojure.spec][cljspec] or [plumatic/schema][schema].
 
 [schema]: https://github.com/plumtic/schema
