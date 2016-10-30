@@ -1,8 +1,8 @@
 (ns invariant.specter
-  "A collection of [specter][1] navigators for common requirements related to
+  "A collection of specter navigators for common requirements related to
    invariant verification.
 
-   [1]: https://github.com/nathanmarz/specter"
+   Documentation: https://github.com/nathanmarz/specter"
   (:require [com.rpl.specter :as specter]))
 
 (def ^{:arglists '([k])} dfs

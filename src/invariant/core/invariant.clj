@@ -19,7 +19,7 @@
   (invariant-verify [_ state target]
     (verify state target))
   (report-broken-invariant [invariant state value]
-    (error/invariant-broken
+    (error/broken-invariant
       (p/invariant-name invariant)
       state
       value))
@@ -35,16 +35,31 @@
   "Generate an invariant describing the relationship between two subsets of
    a given piece of data.
 
-   - `:name`: the name of the invariant,
+   - `:name`: the name of the invariant (needs to be a namespaced keyword),
    - `:sources`: specter paths to elements the invariant state is built from,
    - `:targets`: specter paths to elements that are verified using the invariant,
    - `:state`: the initial invariant state,
-   - `:reduce`: a reducer function to be applied to `:state` and `:sources` items,
-   - `:verify`: a predicate applied to `:state` and `:targets` items.
+   - `:reduce`: a reducer function to be applied to `:state` and source items,
+   - `:verify`: a predicate applied to verification state and target items.
 
    Internally, the incoming data is traversed using `:sources` paths and each
    element passed to `:reduce`. Afterwards, the final state is used to verify
-   all `:targets` paths using `:verify`."
+   all `:targets` paths using `:verify`.
+
+   For example, to create an invariant between variable declarations and usages:
+
+   ```clojure
+   (invariant/invariant
+     {:name    :validator/variables-have-been-declared-before-usage
+      :sources [:declarations ALL :name]
+      :targets [:body (walker :variable) :variable (must :name)]
+      :state   #{}
+      :reduce  conj
+      :verify  contains?})
+   ```
+
+   This will collect all variable names and store them in a set, before
+   verifying that the name of each used variable appears within said set."
   [{:keys [name sources targets state reduce verify]
     :or {targets specter/STAY
          state   ()
@@ -54,4 +69,10 @@
          targets
          (fn? reduce)
          (fn? verify)]}
-  (->Invariant name sources targets state reduce verify))
+  (->Invariant
+    name
+    (specter/comp-paths sources)
+    (specter/comp-paths targets)
+    state
+    reduce
+    verify))

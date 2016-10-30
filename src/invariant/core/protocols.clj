@@ -1,4 +1,5 @@
 (ns invariant.core.protocols
+  "Protocols implemented by invariants."
   (:require [invariant.potemkin :refer [defprotocol+]]))
 
 (defprotocol+ Invariant

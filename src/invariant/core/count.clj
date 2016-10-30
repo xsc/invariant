@@ -4,7 +4,18 @@
 
 (defn count
   "An invariant on the number of elements matching a given specter navigator and
-   predicate."
+   predicate.
+
+   For example, to ensure that there are at most 5 queries within a vector of
+   operations.
+
+   ```clojure
+   (invariant/count
+     {:name    :validator/at-most-five-queries
+      :sources [:operations ALL #(= (:type %) :query)]}
+     <= 5)
+   ```
+   "
   [{:keys [name sources predicate]} count-predicate & args]
   (let [reduce-fn (if predicate
                     (fn [counter value]

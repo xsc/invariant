@@ -1,5 +1,5 @@
 (ns invariant.core
-  "Invariants on Clojure data structures."
+  "API facade providing invariants on Clojure data structures."
   (:refer-clojure :exclude [count and])
   (:require [invariant.core
              and

@@ -1,4 +1,4 @@
-(ns invariant.core.engine
+(ns ^:no-doc invariant.core.engine
   (:require [invariant.core.protocols :as p]
             [com.rpl.specter :as specter]))
 
@@ -41,7 +41,9 @@
 
 (defn run
   "Run the invariant on the given data, producing a seq of error containers or
-   `nil`."
+   `nil`.
+
+   See [[debug]] for a more verbose result."
   [invariant data]
   (let [state (generate-verification-state invariant data)
         broken (verify-invariants invariant state data)]
@@ -57,7 +59,7 @@
    - `:targets` as collected from the data,
    - `:state` as computed from the sources.
 
-   "
+   Should be used for debugging only, otherwise [[run]] is preferred."
   [invariant data]
   (let [sources (into [] (collect-sources invariant data))
         targets (into [] (collect-targets invariant data))

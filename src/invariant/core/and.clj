@@ -12,7 +12,8 @@
          (fn [index navigator]
            [(specter/putval index) navigator])
          navigators)
-       (apply specter/multi-path)))
+       (apply specter/multi-path)
+       (specter/comp-paths)))
 
 (defn- generate-invariant-name
   [invariants]
@@ -72,8 +73,11 @@
   (invoke [this data]
     (engine/run this data)))
 
+(alter-meta! #'->AndInvariant assoc :private true)
+(alter-meta! #'map->AndInvariant assoc :private true)
+
 (defn and*
-  "Compound invariant ensuring that all the given invariants are holding."
+  "Identical to [[and]], taking a seq of invariants."
   [invariants]
   {:pre [(next invariants)]}
   (let [sources          (combine-navigators (map p/sources invariants))
@@ -84,6 +88,19 @@
     (->AndInvariant and-name sources targets index->state index->invariant)))
 
 (defn and
-  "Compound invariant ensuring that all the given invariants are holding."
+  "Ensure that all the given invariants hold.
+
+   ```clojure
+   (invariant/and
+     (invariant/unique
+       {:name :validator/variable-declarations-unique
+        ...})
+     (invariant/count
+       {:name :validator/at-least-one-function-call
+        ...}))
+   ```
+
+   Invariant sources, targets and state will be merged internally and a combined
+   seq of all broken invariants will be returned."
   [& invariants]
   (and* invariants))
