@@ -5,18 +5,18 @@
             [com.rpl.specter :refer :all]))
 
 (deftest t-simple-invariant
-  (let [invariant (invariant/invariant
-                    {:name    :validator/variables-declared
-                     :sources [:declarations ALL :name]
-                     :targets [:body (walker :variable) :variable (must :name)]
-                     :state   #{}
-                     :reduce  conj
-                     :verify  contains?})]
+  (let [invariant
+        (-> (invariant/on [:body (walker :variable) :variable (must :name)])
+            (invariant/with :declared-variables [:declarations ALL :name] conj #{})
+            (invariant/each
+              (invariant/predicate
+                :validator/variables-declared
+                (fn [{:keys [declared-variables]} variable-name]
+                  (contains? declared-variables variable-name)))))]
     (testing "invariant implementation."
-      (is (instance? clojure.lang.IFn invariant))
       (is (satisfies? p/Invariant invariant)))
     (testing "valid document."
-      (is (nil? (invariant/run
+      (is (nil? (invariant/check
                   invariant
                   {:declarations [{:name "a"} {:name "b"}]
                    :body [{:type :function
@@ -24,7 +24,7 @@
                            :args [{:variable {:name "a"}}
                                   {:variable {:name "b"}}]}]}))))
     (testing "invalid document."
-      (let [errors (invariant/run
+      (let [errors (invariant/check
                      invariant
                      {:declarations [{:name "a"} {:name "b"}]
                       :body [{:type :function
@@ -33,4 +33,4 @@
                                      {:variable {:name "y"}}]}]})]
         (is (seq errors))
         (is (= #{"x" "y"} (into #{} (map :value errors))))
-        (is (every? (comp #{#{"a" "b"}} :state) errors))))))
+        (is (every? (comp #{#{"a" "b"}} :declared-variables :state) errors))))))
