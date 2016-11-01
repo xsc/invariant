@@ -3,14 +3,16 @@
 
 (deftype Any []
   Invariant
-  (run-invariant [_ state value]
+  (run-invariant [_ path state value]
     {:data   [value]
+     :path   path
      :state  state
      :errors []}))
 
 (extend-protocol Invariant
   nil
-  (run-invariant [_ state value]
+  (run-invariant [_ path state value]
     {:data   [value]
+     :path   path
      :state  state
      :errors []}))

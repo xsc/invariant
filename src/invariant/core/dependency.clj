@@ -2,10 +2,10 @@
   (:require [invariant.core.protocols :refer :all]
             [com.rpl.specter :as specter]))
 
-(deftype Dependency [invariant k path reduce-fn initial-state]
+(deftype Dependency [invariant k path reduce-fn]
   Invariant
-  (run-invariant [_ state value]
-    (let [inner-state (->> (specter/traverse path value)
-                           (reduce reduce-fn initial-state))]
-      (-> (run-invariant invariant state value)
-          (assoc-in [:state k] inner-state)))))
+  (run-invariant [_ path' state value]
+    (reduce
+      #(update-in %1 [:state k] reduce-fn %2)
+      (run-invariant invariant path' state value)
+      (specter/select path value))))

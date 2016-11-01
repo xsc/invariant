@@ -3,6 +3,6 @@
 
 (deftype Bind [bind-fn]
   Invariant
-  (run-invariant [_ state data]
+  (run-invariant [_ path state data]
     (let [invariant (bind-fn state data)]
-      (run-invariant invariant state data))))
+      (run-invariant invariant path state data))))

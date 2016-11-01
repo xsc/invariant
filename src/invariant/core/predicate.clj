@@ -3,11 +3,13 @@
 
 (deftype Predicate [name predicate]
   Invariant
-  (run-invariant [_ state value]
+  (run-invariant [_ path state value]
     (if (predicate state value)
       {:data   [value]
+       :path   path
        :state  state
        :errors []}
       {:data   [value]
-       :errors [(->InvariantError name state value)]
+       :path   []
+       :errors [(error name path state value)]
        :state  state})))

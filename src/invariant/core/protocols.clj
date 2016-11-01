@@ -3,7 +3,18 @@
             [com.rpl.specter :as specter]))
 
 (defprotocol+ Invariant
-  (run-invariant [invariant state value]
-    "Return a map of `:data`, `:errors` and `:state`."))
+  (run-invariant [invariant path state value]
+    "Return a map of:
 
-(defrecord InvariantError [name state value])
+     - `:path`: a descriptive path to the verified data,
+     - `:data`: a seq of verified elements,
+     - `:state`: the current invariant state,
+     - `:errors`: verification errors encountered."))
+
+(defn error
+  "Create a new invariant verification error."
+  [name path state value]
+  {:invariant/name  name
+   :invariant/state state
+   :invariant/path  path
+   :invariant/value value})
