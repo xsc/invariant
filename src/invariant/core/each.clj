@@ -3,7 +3,7 @@
 
 (defn- run-each
   [{:keys [path state] :as result} each-invariant index element]
-  (let [path' (conj path :invariant/each index)
+  (let [path' (conj path index)
         r (run-invariant each-invariant path' state element)]
     (update result :errors into (:errors r))))
 
