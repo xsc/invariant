@@ -238,3 +238,14 @@
         (p/run-invariant invariant [] initial-state)
         (:errors)
         (seq))))
+
+(defn holds?
+  "Returns `true` if running the invariant against the given data does not
+   produce any errors."
+  ([invariant data]
+   (holds? invariant {} data))
+  ([invariant initial-state data]
+   (->> data
+        (p/run-invariant invariant [] initial-state)
+        (:errors)
+        (empty?))))
