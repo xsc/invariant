@@ -64,7 +64,7 @@ Or invariants describing the relationship between parts of the data:
 
 ```clojure
 (def all-variables-have-been-declared
-  (-> (invariant/on [:body (walker :variable) (must :name)])
+  (-> (invariant/on [:body (walker :variable) :variable (must :name)])
       (invariant/with :declared-variables [:declarations ALL :name] conj #{})
       (invariant/each
         (invariant/predicate
