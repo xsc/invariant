@@ -1,5 +1,7 @@
 # invariant
 
+__[Documentation](https://xsc.github.io/invariant/)__
+
 __invariant__ is a library providing semantic invariants on Clojure data
 structures. It is based on the excellent [specter][specter] library and
 will integrate nicely with [clojure.spec][cljspec].
@@ -12,78 +14,69 @@ This library requires Clojure ≥ 1.7.0.
 ## Usage
 
 __invariant__ is very young and the API might change, although I don't expect
-there to be any breakage regarding  `invariant.core/invariant`.
-
-### Semantic Validation
-
-Invariants represent two passes over the data: one for collecting all
-information needed to decide whether the invariant holds for a single element;
-and another to actually verify those elements.
+there to be any significant breakage.
 
 ```clojure
-(require '[invariant.core :as i]
-         '[invariant.specter :refer [dfs]]
+(require '[invariant.core :as invariant]
          '[com.rpl.specter :refer :all])
-
-(def verify-declaration-before-usage
-  (i/invariant
-    {:name    :validator/variables-have-been-declared-before-usage
-     :sources [:declarations ALL :name]
-     :targets [:body (dfs :variable) (must :name)]
-     :state   #{}
-     :reduce  conj
-     :verify  contains?}))
 ```
 
-Now, if this invariant is run against a piece of data, all elements matching the
-[specter][specter] navigator `:sources` will be collected and used to generate
-an internal verification state using `:reduce` and `:state` – in this case, a
-set of all `:name` keys within `:declarations`.
+## Quickstart
 
-Then, `:targets` is used to find elements to verify, running `:verify` on every
-single one. Here, we ensure that every variable `:name` within `:body` is
-contained in our previously generated set.
-
-Let's see it in action:
+Let's, for the sake of it, verify that within a vector of vectors, every
+subvector's elements sum up to the same value.
 
 ```clojure
-(verify-declaration-before-usage
-  {:declarations [{:name "a", :type "int"}
-                  {:name "b", :type "float"}]
-   :body [{:function-name "+"
-           :function-args [{:variable {:name "a"}}
-                           {:variable {:name "b"}}]}]})
-;; => nil
+(def sums-identical?
+  (-> (invariant/on [ALL])
+      (invariant/with-value :expected-sum #(apply + (first %)))
+      (invariant/each
+        (invariant/predicate
+          :matches-expected-sum?
+          (fn [{:keys [expected-sum]} v]
+            (= expected-sum (apply + v)))))))
 ```
 
-No errors! But what happens if we remove a declaration?
+We can now check the invariant against a piece of data, producing either
+`nil` or a seq of errors.
 
 ```clojure
-(verify-declaration-before-usage
-  {:declarations [{:name "a", :type "int"}]
-   :body [{:function-name "+"
-           :function-args [{:variable {:name "a"}}
-                           {:variable {:name "b"}}]}]})
-;; => (#InvariantBroken{:invariant-name :validator/variables-have-been-declared-before-usage,
-;;                      :state #{"a"},
-;;                      :value "b"})
+(invariant/check sums-identical? [[1 3] [2 2] [5 7]])
+;; => (#:invariant{:name  :matches-expected-sum?,
+;;                 :state {:expected-sum 4},
+;;                 :path  [ALL :invariant/each 2],
+;;                 :value [5 7]})
 ```
 
-Great – and this might even be enough to generate a useful error message!
-
-### Structural Validation
-
-Note that the following passes our previous invariant without problem:
+More complex invariants are possible, e.g. recursive ones:
 
 ```clojure
-(verify-declaration-before-usage {})
-;; => nil
+(def all-values-are-integers
+  (invariant/recursive
+    [self]
+    (invariant/and
+      (invariant/value-predicate :value-int? (comp integer? :value))
+      (-> (invariant/on [:children ALL])
+          (invariant/each self)))))
 ```
 
-Invariants can't do structural validation for you, so you should pair them with
-something like [clojure.spec][cljspec] or [plumatic/schema][schema].
+Or invariants describing the relationship between parts of the data:
 
-[schema]: https://github.com/plumatic/schema
+```clojure
+(def all-variables-have-been-declared
+  (-> (invariant/on [:body (walker :variable) (must :name)])
+      (invariant/with :declared-variables [:declarations ALL :name] conj #{})
+      (invariant/each
+        (invariant/predicate
+          :variable-declared?
+          (fn [{:keys [declared-variables]} v]
+            (contains? declared-variables v))))))
+```
+
+See the [auto-generated documentation](https://xsc.github.io/invariant/) for
+more details.
+
+
 [specter]: https://github.com/nathanmarz/specter
 [cljspec]: http://clojure.org/guides/spec
 
