@@ -55,7 +55,7 @@ More complex invariants are possible, e.g. recursive ones:
   (invariant/recursive
     [self]
     (invariant/and
-      (invariant/value-predicate :value-int? (comp integer? :value))
+      (invariant/property :value-int? (comp integer? :value))
       (-> (invariant/on [:children ALL])
           (invariant/each self)))))
 ```

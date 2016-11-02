@@ -65,20 +65,23 @@
   [name pred-fn]
   (->Predicate name pred-fn))
 
-(defn value-predicate
-  "Generates a predicate whose `pred-fn` will be called with the value currently
-   being verified, as well as the given arguments.
+(defn property
+  "Generates a _stateless_ predicate whose `pred-fn` will be called with the
+   value currently being verified, as well as the given arguments.
 
    ```clojure
    (-> (invariant/on [:declarations ALL :name])
        (invariant/each
-         (invariant/value-predicate
-           :prefix-valid?
-           string/starts-with? \"var_\")))
+         (invariant/property :prefix-valid? string/starts-with? \"var_\")))
    ```
-   "
+
+   If you need the invariant state to decide on whether the invariant holds,
+   use [[predicate]]."
   [name pred-fn & args]
-  (->Predicate name #(apply pred-fn %2 args)))
+  (->Predicate name
+               (if (seq args)
+                 #(apply pred-fn %2 args)
+                 #(pred-fn %2))))
 
 (def any
   "An `Invariant` that will never produce an error."
@@ -94,7 +97,7 @@
 
    ```clojure
    (invariant/and
-       (invariant/value-predicate :value-int? (comp integer? :value))
+       (invariant/property :value-int? (comp integer? :value))
        (-> (invariant/on [:children ALL])
            (invariant/each ...)))
    ```
@@ -147,7 +150,7 @@
    (invariant/recursive
      [self]
      (invariant/and
-       (invariant/value-predicate :value-int? (comp integer? :value))
+       (invariant/property :value-int? (comp integer? :value))
        (-> (invariant/on [:children ALL])
            (invariant/each self))))
    ```
