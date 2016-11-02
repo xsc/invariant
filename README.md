@@ -44,7 +44,7 @@ We can now check the invariant against a piece of data, producing either
 (invariant/check sums-identical? [[1 3] [2 2] [5 7]])
 ;; => (#:invariant{:name  :matches-expected-sum?,
 ;;                 :state {:expected-sum 4},
-;;                 :path  [ALL :invariant/each 2],
+;;                 :path  [ALL 2],
 ;;                 :value [5 7]})
 ```
 
