@@ -49,6 +49,14 @@
   [path]
   `(on* ~path (quote ~path)))
 
+(let [self-path (on* specter/STAY [])]
+  (defn current-value
+    "An `Invariant` selector pointing at the current (i.e. top-level) value.
+     Equivalent to `(on [STAY])` without polluting the path with `STAY`
+     elements."
+    []
+    self-path))
+
 (defn predicate
   "Generates a predicate whose `pred-fn` will be called with the invariant
    state and the value currently being verified.
