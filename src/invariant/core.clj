@@ -231,6 +231,15 @@
   [invariant state-key path]
   (with invariant state-key path (fn [c _] (inc c)) 0))
 
+(defn collect
+  "Like [[with]], collecting all elements at the given specter path at the
+   desired key within the invariant state. If `:unique?` (default: `true`) is
+   set the result will be a set."
+  [invariant state-key path
+   & [{:keys [unique?] :or {unique? true}}]]
+  (let [initial-collection (if unique? #{} [])]
+    (with invariant state-key path conj initial-collection)))
+
 ;; ### Invariant Application
 
 (defn each
