@@ -30,6 +30,7 @@
    [[on]] should be preferred since it will automatically generate `path-form`
    for you."
   [path path-form]
+  {:pre [(sequential? path-form)]}
   (let [path (specter/comp-paths path)]
     (->Selector path path-form)))
 
