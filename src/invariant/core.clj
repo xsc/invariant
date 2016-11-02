@@ -15,6 +15,8 @@
              [protocols :as p]]
             [com.rpl.specter :as specter]))
 
+(declare each)
+
 ;; ## Base Invariants
 
 (defn on*
@@ -63,16 +65,20 @@
 
    ```clojure
    (-> (invariant/on [:usages ALL :name])
-       (invariant/with :declared-variables [:declarations ALL :name] conj #{})
+       (invariant/collect :declared-variables [:declarations ALL :name])
        (invariant/each
          (invariant/predicate
            :declared?
            (fn [{:keys [declared-variables]} n]
              (contains? declared-variables n)))))
    ```
-   "
-  [name pred-fn]
-  (->Predicate name pred-fn))
+
+   If `invariant` is given, the predicate will directly be attached to it
+   using [[each]]."
+  ([name pred-fn]
+   (->Predicate name pred-fn))
+  ([invariant name pred-fn]
+   (each invariant (predicate name pred-fn))))
 
 (defn property
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
@@ -146,9 +152,14 @@
                ...)))))
    ```
 
-   This can be used to do invariant dispatch based on concrete values."
-  [bind-fn]
-  (->Bind bind-fn))
+   This can be used to do invariant dispatch based on concrete values.
+
+   If `invariant` is given, the `bind` logic will directly be attached to it
+   using [[each]]."
+  ([bind-fn]
+   (->Bind bind-fn))
+  ([invariant bind-fn]
+   (each invariant (bind bind-fn))))
 
 ;; ## Recursive Invariants
 
