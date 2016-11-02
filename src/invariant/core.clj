@@ -12,6 +12,7 @@
              [fmap :refer [->FMap]]
              [predicate :refer [->Predicate]]
              [selector :refer [->Selector]]
+             [unique :refer [->Unique]]
              [protocols :as p]]
             [com.rpl.specter :as specter]))
 
@@ -243,6 +244,21 @@
    currently being verified."
   [invariant seq-invariant]
   (->All invariant seq-invariant))
+
+;; ### Common Invariants
+
+(defn unique
+  "Generates an `Invariant` verifying that all current elements are unique.
+
+   ```clojure
+   (-> (invariant/on [:declarations ALL :name])
+       (invariant/unique :declarations-unique?))
+   ```
+
+   Errors will be reported per-element."
+  [invariant name
+   & [{:keys [unique-by] :or {unique-by identity}}]]
+  (->Unique invariant name unique-by))
 
 ;; ## Run Function
 
