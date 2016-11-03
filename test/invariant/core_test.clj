@@ -7,7 +7,7 @@
 (deftest t-simple-invariant
   (let [invariant
         (-> (invariant/on [:body (walker :variable) :variable (must :name)])
-            (invariant/with :declared-variables [:declarations ALL :name] conj #{})
+            (invariant/collect-as :declared-variables [:declarations ALL :name])
             (invariant/each
               (invariant/predicate
                 :validator/variables-declared

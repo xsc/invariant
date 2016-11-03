@@ -9,3 +9,9 @@
       (->> (specter/traverse path value)
            (reduce reduce-fn initial-value)
            (assoc-in result [:state k])))))
+
+(deftype RootDependency [invariant k f]
+  Invariant
+  (run-invariant [_ path' state value]
+    (let [result (run-invariant invariant path' state value)]
+      (assoc-in result [:state k] (f value)))))
