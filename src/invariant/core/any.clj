@@ -7,12 +7,7 @@
     {:data   [value]
      :path   path
      :state  state
-     :errors []})
-
-  ;; to avoid surprises when expecting this to be a function.
-  clojure.lang.IFn
-  (invoke [this]
-    this))
+     :errors []}))
 
 (extend-protocol Invariant
   nil

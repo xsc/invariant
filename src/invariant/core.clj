@@ -99,8 +99,9 @@
                  #(apply pred-fn %2 args)
                  #(pred-fn %2))))
 
-(def any
+(defn any
   "An `Invariant` that will never produce an error."
+  []
   (->Any))
 
 (defn fail
