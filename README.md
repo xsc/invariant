@@ -29,7 +29,7 @@ subvector's elements sum up to the same value.
 ```clojure
 (def sums-identical?
   (-> (invariant/on [ALL])
-      (invariant/with-value :expected-sum #(apply + (first %)))
+      (invariant/as :expected-sum #(apply + (first %)))
       (invariant/each
         (invariant/predicate
           :matches-expected-sum?
@@ -65,7 +65,7 @@ Or invariants describing the relationship between parts of the data:
 ```clojure
 (def all-variables-have-been-declared
   (-> (invariant/on [:body (walker :variable) :variable (must :name)])
-      (invariant/with :declared-variables [:declarations ALL :name] conj #{})
+      (invariant/as :declared-variables [:declarations ALL :name] conj #{})
       (invariant/each
         (invariant/predicate
           :variable-declared?
