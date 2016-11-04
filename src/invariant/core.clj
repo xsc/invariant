@@ -195,11 +195,11 @@
                 :children [{:value 4}]}]}
    ```
    "
-  [[self-sym] & body]
+  [[self-sym] invariant-form]
   {:pre [(symbol? self-sym)]}
   `(let [promise# (promise)
          ~self-sym (bind (fn [~'_ ~'_] @promise#))
-         invariant# ~@body]
+         invariant# ~invariant-form]
      (deliver promise# invariant#)
      invariant#))
 
