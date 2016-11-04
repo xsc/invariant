@@ -170,14 +170,9 @@
                ...)))))
    ```
 
-   This can be used to do invariant dispatch based on concrete values.
-
-   If `invariant` is given, the `bind` logic will directly be attached to it
-   using [[each]]."
-  ([bind-fn]
-   (->Bind bind-fn))
-  ([invariant bind-fn]
-   (each invariant (bind bind-fn))))
+   This can be used to do invariant dispatch based on concrete values. "
+  [bind-fn]
+  (->Bind bind-fn))
 
 ;; ## Recursive Invariants
 
