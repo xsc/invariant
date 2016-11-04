@@ -74,13 +74,9 @@
            (fn [{:keys [declared-variables]} n]
              (contains? declared-variables n)))))
    ```
-
-   If `invariant` is given, the predicate will directly be attached to it
-   using [[each]]."
-  ([name pred-fn]
-   (->Predicate name pred-fn))
-  ([invariant name pred-fn]
-   (each invariant (predicate name pred-fn))))
+   "
+  [name pred-fn]
+  (->Predicate name pred-fn))
 
 (defn property
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
