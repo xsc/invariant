@@ -21,6 +21,18 @@
 
 ;; ## Base Invariants
 
+(defn any
+  "An `Invariant` that will never produce an error."
+  []
+  (->Any))
+
+(defn fail
+  "Generate an `Invariant` that will always produce an error."
+  [name]
+  (->Fail name))
+
+;; ## Selectors
+
 (defn on*
   "Generates an `Invariant` that uses the given specter path to collect
    all pieces of data the invariant should apply to. This is basically a
@@ -61,6 +73,8 @@
     []
     self-path))
 
+;; ## Predicates
+
 (defn predicate
   "Generates a predicate whose `pred-fn` will be called with the invariant
    state and the value currently being verified.
@@ -93,15 +107,7 @@
   [name pred-fn]
   (->Predicate name #(pred-fn %2)))
 
-(defn any
-  "An `Invariant` that will never produce an error."
-  []
-  (->Any))
-
-(defn fail
-  "Generate an `Invariant` that will always produce an error."
-  [name]
-  (->Fail name))
+;; ## Conjunction
 
 (defn and
   "Generate an `Invariant` combining all of the given ones.
