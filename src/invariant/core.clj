@@ -107,6 +107,21 @@
   [name pred-fn]
   (->Predicate name #(pred-fn %2)))
 
+(defn state
+  "Generates a predicate whose `pred-fn` will be called with the current state,
+   ignoring any values currently being verified.
+
+   ```clojure
+   (-> (invariant/current-value)
+       (invariant/as :count count)
+       (invariant/is?
+         (invariant/state :at-least-one? #(pos? (:count %)))))
+   ```
+   If you need the values being verified to decide on whether the invariant
+   holds, use [[property]]."
+  [name pred-fn]
+  (->Predicate name (fn [state _] (pred-fn state))))
+
 ;; ## Conjunction
 
 (defn and
@@ -208,8 +223,8 @@
        ...)
    ```
 
-   The resulting invariant state can be used e.g. in [[bind]] and [[predicate]]
-   and will be shaped similarly to the following:
+   The resulting invariant state can be used e.g. in [[bind]], [[property]]
+   and [[state]] and will be shaped similarly to the following:
 
    ```clojure
    {:declared-variables {\"a\", \"b\", \"c\"}}
