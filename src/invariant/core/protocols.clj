@@ -18,3 +18,9 @@
    :invariant/state state
    :invariant/path  path
    :invariant/value value})
+
+(defn merge-results
+  "Merge the results of two invocations of [[run-invariant]]."
+  [result1 result2]
+  (-> result1
+      (update :errors into (:errors result2))))

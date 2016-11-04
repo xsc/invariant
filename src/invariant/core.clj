@@ -10,6 +10,7 @@
              [each :refer [->Each]]
              [fail :refer [->Fail]]
              [fmap :refer [->FMap]]
+             [is :refer [->Is]]
              [predicate :refer [->Predicate]]
              [selector :refer [->Selector]]
              [unique :refer [->Unique]]
@@ -251,6 +252,21 @@
    currently being verified."
   [invariant element-invariant]
   (->Each invariant element-invariant))
+
+(defn is?
+  "Generates an `Invariant` that will be applied to the single element
+   currently being verified. Will throw an exception if a selector like [[on]]
+   matched multiple elements.
+
+   ```clojure
+   (-> (invariant/on [(must :right)])
+       (invariant/is? tree-balanced-invariant))
+   ```
+
+   This behaves like [[each]] but will not pollute the invariant error path
+   with a zero index."
+  [invariant self-invariant]
+  (->Is invariant self-invariant))
 
 (defn all
   "Generates an `Invariant` that will be applied to the seq of all elements
