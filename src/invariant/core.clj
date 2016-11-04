@@ -67,7 +67,7 @@
   `(on* ~path (quote ~path)))
 
 (let [self-path (on* specter/STAY [])]
-  (defn current-value
+  (defn on-current-value
     "An `Invariant` selector pointing at the current (i.e. top-level) value.
      Equivalent to `(on [STAY])` without polluting the path with `STAY`
      elements."
@@ -113,7 +113,7 @@
    ignoring any values currently being verified.
 
    ```clojure
-   (-> (invariant/current-value)
+   (-> (invariant/on-current-value)
        (invariant/as :count count)
        (invariant/is?
          (invariant/state :at-least-one? #(pos? (:count %)))))
@@ -308,7 +308,7 @@
    stdout.
 
    ```clojure
-   (-> (invariant/current-value)
+   (-> (invariant/on-current-value)
        (invariant/is?
          (invariant/debug
            ::predicate
