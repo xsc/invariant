@@ -17,6 +17,7 @@
                    :source-uri "https://github.com/xsc/invariant/blob/master/{filepath}#L{line}"
                    :namespaces [invariant.core
                                 invariant.core.protocols
+                                invariant.debug
                                 invariant.spec]}}}
   :aliases {"codox" ["with-profile" "+codox" "codox"]}
   :pedantic? :abort)
