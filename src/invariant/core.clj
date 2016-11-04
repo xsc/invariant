@@ -6,6 +6,7 @@
              [and :refer [->And]]
              [any :refer [->Any]]
              [bind :refer [->Bind]]
+             [debug :refer [->Debug]]
              [dependency :refer [->Dependency ->RootDependency]]
              [each :refer [->Each]]
              [fail :refer [->Fail]]
@@ -287,6 +288,38 @@
    currently being verified."
   [invariant seq-invariant]
   (->All invariant seq-invariant))
+
+;; ## Debugging
+
+(defn default-debug-fn
+  [k path state value {state' :state, errors :errors}]
+  (println "key:    " (pr-str k))
+  (println "value:  " (pr-str value))
+  (println "at:     " (pr-str path))
+  (println "state:  " (pr-str state)
+           (if (not= state state')
+             (str "-> " (pr-str state'))
+             ""))
+  (println "errors: " (pr-str (vec errors)))
+  (println))
+
+(defn debug
+  "Wrap resolution of the given `Invariant` to print debug information to
+   stdout.
+
+   ```clojure
+   (-> (invariant/current-value)
+       (invariant/is?
+         (invariant/debug
+           ::predicate
+           (invariant/value :int? integer?))))
+   ```
+
+   "
+  ([k invariant]
+   (debug k invariant default-debug-fn))
+  ([k invariant debug-fn]
+   (->Debug k invariant debug-fn)))
 
 ;; ### Common Invariants
 
