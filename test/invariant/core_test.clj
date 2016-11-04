@@ -9,7 +9,7 @@
         (-> (invariant/on [:body (walker :variable) :variable (must :name)])
             (invariant/collect-as :declared-variables [:declarations ALL :name])
             (invariant/each
-              (invariant/predicate
+              (invariant/property
                 :validator/variables-declared
                 (fn [{:keys [declared-variables]} variable-name]
                   (contains? declared-variables variable-name)))))]

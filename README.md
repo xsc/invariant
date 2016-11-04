@@ -31,7 +31,7 @@ subvector's elements sum up to the same value.
   (-> (invariant/on [ALL])
       (invariant/as :expected-sum #(apply + (first %)))
       (invariant/each
-        (invariant/predicate
+        (invariant/property
           :matches-expected-sum?
           (fn [{:keys [expected-sum]} v]
             (= expected-sum (apply + v)))))))
@@ -55,7 +55,7 @@ More complex invariants are possible, e.g. recursive ones:
   (invariant/recursive
     [self]
     (invariant/and
-      (invariant/property :value-int? (comp integer? :value))
+      (invariant/value :value-int? (comp integer? :value))
       (-> (invariant/on [:children ALL])
           (invariant/each self)))))
 ```
@@ -67,7 +67,7 @@ Or invariants describing the relationship between parts of the data:
   (-> (invariant/on [:body (walker :variable) :variable (must :name)])
       (invariant/as :declared-variables [:declarations ALL :name] conj #{})
       (invariant/each
-        (invariant/predicate
+        (invariant/property
           :variable-declared?
           (fn [{:keys [declared-variables]} v]
             (contains? declared-variables v))))))

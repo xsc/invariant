@@ -75,7 +75,7 @@
 
 ;; ## Predicates
 
-(defn predicate
+(defn property
   "Generates a predicate whose `pred-fn` will be called with the invariant
    state and the value currently being verified.
 
@@ -83,7 +83,7 @@
    (-> (invariant/on [:usages ALL :name])
        (invariant/collect-as :declared-variables [:declarations ALL :name])
        (invariant/each
-         (invariant/predicate
+         (invariant/property
            :declared?
            (fn [{:keys [declared-variables]} n]
              (contains? declared-variables n)))))
@@ -92,18 +92,18 @@
   [name pred-fn]
   (->Predicate name pred-fn))
 
-(defn property
+(defn value
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
    value currently being verified.
 
    ```clojure
    (-> (invariant/on [:declarations ALL :name])
        (invariant/each
-         (invariant/property :prefix-valid? #(string/starts-with? % \"var_\"))))
+         (invariant/value :prefix-valid? #(string/starts-with? % \"var_\"))))
    ```
 
    If you need the invariant state to decide on whether the invariant holds,
-   use [[predicate]]."
+   use [[property]]."
   [name pred-fn]
   (->Predicate name #(pred-fn %2)))
 
@@ -114,7 +114,7 @@
 
    ```clojure
    (invariant/and
-       (invariant/property :value-int? (comp integer? :value))
+       (invariant/value :int? (comp integer? :value))
        (-> (invariant/on [:children ALL])
            (invariant/each ...)))
    ```
@@ -149,8 +149,8 @@
          (invariant/bind
            (fn [_ {:keys [function-name]}]
              (case function-name
-               \"F\" (invariant/predicate :f-args-valid? ...)
-               \"G\" (invariant/predicate :g-args-valid? ...)
+               \"F\" (invariant/property :f-args-valid? ...)
+               \"G\" (invariant/property :g-args-valid? ...)
                ...)))))
    ```
 
@@ -172,7 +172,7 @@
    (invariant/recursive
      [self]
      (invariant/and
-       (invariant/property :value-int? (comp integer? :value))
+       (invariant/value :int? (comp integer? :value))
        (-> (invariant/on [:children ALL])
            (invariant/each self))))
    ```
