@@ -80,21 +80,18 @@
 
 (defn property
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
-   value currently being verified, as well as the given arguments.
+   value currently being verified.
 
    ```clojure
    (-> (invariant/on [:declarations ALL :name])
        (invariant/each
-         (invariant/property :prefix-valid? string/starts-with? \"var_\")))
+         (invariant/property :prefix-valid? #(string/starts-with? % \"var_\"))))
    ```
 
    If you need the invariant state to decide on whether the invariant holds,
    use [[predicate]]."
-  [name pred-fn & args]
-  (->Predicate name
-               (if (seq args)
-                 #(apply pred-fn %2 args)
-                 #(pred-fn %2))))
+  [name pred-fn]
+  (->Predicate name #(pred-fn %2)))
 
 (defn any
   "An `Invariant` that will never produce an error."
