@@ -204,6 +204,36 @@
      (deliver promise# invariant#)
      invariant#))
 
+(defmacro recursive-dispatch
+  "Generate a function that returns an `Invariant` for some dispatch value. The
+   function itself will be bound to `self-sym` within the body, so it can be
+   used recursively. `dispatch-form` has to be a map.
+
+   This can be useful to apply invariants to arbitrary nested structures when
+   there is something in place resembling a type system.
+
+   E.g. if there are people and products that reference each other, you might
+   want to recursively validate each entity by type:
+
+   ```clojure
+   (invariant/recursive-dispatch
+     [self]
+     {\"Person\"  (person-invariant self)
+      \"Product\" (product-invariant self)})
+   ```
+   "
+  [[self-sym] dispatch-form]
+  `(let [promise# (promise)
+         ~self-sym (fn [v#] (@promise# v#))
+         dispatch# ~dispatch-form]
+     (when-not (map? dispatch#)
+       (throw
+         (IllegalArgumentException.
+           ~(str "the body of 'recursive-dispatch' has to be a map."
+                 "\ngiven: " (pr-str dispatch-form)))))
+     (deliver promise# dispatch#)
+     dispatch#))
+
 ;; ## Combinators
 
 ;; ### Invariant State
