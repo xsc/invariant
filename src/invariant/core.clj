@@ -318,37 +318,19 @@
     :d #{:a}}
    ```
 
-   For example, we can verify such a graph directly:
+   `:describe-fn` can be given to provide more information to errors (e.g. to
+   retain more of the original input than just the node ID). E.g., if the
+   input is a seq of nodes akin to `{:id \"A\", :children #{...}}` one could
+   retain the full values using:
 
    ```clojure
-   (invariant/check
-     (invariant/acyclic :graph-is-acyclic? #(do %2))
-     {:a #{:b :c} :c #{:d} :d #{:a}})
-   ;; => ({:invariant/name  :graph-is-acyclic?,
-   ;;      :invariant/value [:c :d :a],
-   ;;      :invariant/error {:cycle #{:c :d :a}, :edges {:a #{:c}, ...}}
-   ;;      ...})
+   (defn describe-nodes
+     [nodes]
+     (into {} (map (juxt :id identity) nodes)))
    ```
 
-   `:describe-fn` can be given to provide more information in the error value:
-
-   ```clojure
-   (invariant/check
-     (invariant/acyclic
-       :graph-is-acyclic?
-       (fn [_ value]
-         (into {} (map (juxt :id :children) value)))
-       (fn [_ value]
-         (into {} (map (juxt :id identity) value))))
-     [{:id :a, :children #{:b}}
-      {:id :b, :children #{:a}}])
-   ;; => ({:invariant/name :graph-is-acyclic?,
-   ;;      :invariant/value [{:id :b, :children #{:a}} {:id :a, :children #{:b}}],
-   ;;      ...})
-   ```
-
-   The error container will provide the detected cycle, as well as the relevant
-   edges within the `:invariant/error` key."
+   Any error container produced by this invariant will provide the detected
+   cycle, as well as the relevant edges within the `:invariant/error` key."
   ([name edge-fn]
    (acyclic name edge-fn (constantly identity)))
   ([name edge-fn describe-fn]
