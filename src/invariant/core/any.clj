@@ -4,15 +4,9 @@
 (deftype Any []
   Invariant
   (run-invariant [_ path state value]
-    {:data   [value]
-     :path   path
-     :state  state
-     :errors []}))
+    (invariant-holds path state value)))
 
 (extend-protocol Invariant
   nil
   (run-invariant [_ path state value]
-    {:data   [value]
-     :path   path
-     :state  state
-     :errors []}))
+    (invariant-holds path state value)))

@@ -6,6 +6,4 @@
   (run-invariant [_ path state data]
     (->> invariants
          (map #(run-invariant % path state data))
-         (reduce
-           (fn [result more]
-             (update result :errors into (:errors more)))))))
+         (reduce merge-results))))

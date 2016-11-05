@@ -10,8 +10,8 @@
   (= (get fq value) 1))
 
 (defn- add-error
-  [{:keys [path state] :as result} name index element]
-  (->> (error name (conj path index) state element)
+  [{:keys [path state] :as result} name index element value]
+  (->> (->invariant-error name (conj path index) state value element)
        (update result :errors conj)))
 
 (deftype Unique [invariant name unique-by]
@@ -25,6 +25,6 @@
              (fn [result [index element]]
                (let [value (unique-by element)]
                  (if-not (unique? fq value)
-                   (add-error result name index element)
+                   (add-error result name index element value)
                    result)))
              result)))))

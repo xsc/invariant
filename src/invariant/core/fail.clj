@@ -4,6 +4,4 @@
 (deftype Fail [name]
   Invariant
   (run-invariant [_ path state value]
-    {:data   [value]
-     :state  state
-     :errors [(error name path state value)]}))
+    (invariant-failed name path state value)))

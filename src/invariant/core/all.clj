@@ -5,6 +5,6 @@
   Invariant
   (run-invariant [_ path state data]
     (let [result  (run-invariant invariant path state data)
-          {:keys [state path data]} result
-          all-result (run-invariant all-invariant path state data)]
-      (update result :errors into (:errors all-result)))))
+          {:keys [state path data]} result]
+      (->> (run-invariant all-invariant path state data)
+           (merge-results result)))))

@@ -5,7 +5,7 @@
   [{:keys [path state] :as result} each-invariant index element]
   (let [path' (conj path index)
         r (run-invariant each-invariant path' state element)]
-    (update result :errors into (:errors r))))
+    (merge-results result r)))
 
 (deftype Each [invariant each-invariant]
   Invariant
