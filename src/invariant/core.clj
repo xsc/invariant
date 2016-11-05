@@ -6,6 +6,7 @@
              [and :refer [->And]]
              [any :refer [->Any]]
              [bind :refer [->Bind]]
+             [cycles :refer [->Acyclic]]
              [dependency :refer [->Dependency ->RootDependency]]
              [each :refer [->Each]]
              [fail :refer [->Fail]]
@@ -297,6 +298,61 @@
   [invariant name
    & [{:keys [unique-by] :or {unique-by identity}}]]
   (->Unique invariant name unique-by))
+
+(defn acyclic
+  "Generates an `Invariant` verifying that there are no cyclic properties
+   within the element currently being verified. This needs two functions:
+
+   - `:edge-fn`: takes the state and the current value and produces a map of
+     node IDs to a set of successor nodes,
+   - `:describe-fn`: takes the state and the current value and produces a
+     function that maps node IDs to a more descriptive representation to
+     be included in errors (defaults to returning the node ID itself).
+
+   `:edge-fn` should produce a map like the following, describing the edges of
+   a graph constructed from the value currently being verified:
+
+   ```clojure
+   {:a #{:b :c}
+    :c #{:d}
+    :d #{:a}}
+   ```
+
+   For example, we can verify such a graph directly:
+
+   ```clojure
+   (invariant/check
+     (invariant/acyclic :graph-is-acyclic? #(do %2))
+     {:a #{:b :c} :c #{:d} :d #{:a}})
+   ;; => ({:invariant/name  :graph-is-acyclic?,
+   ;;      :invariant/value [:c :d :a],
+   ;;      :invariant/error {:cycle #{:c :d :a}, :edges {:a #{:c}, ...}}
+   ;;      ...})
+   ```
+
+   `:describe-fn` can be given to provide more information in the error value:
+
+   ```clojure
+   (invariant/check
+     (invariant/acyclic
+       :graph-is-acyclic?
+       (fn [_ value]
+         (into {} (map (juxt :id :children) value)))
+       (fn [_ value]
+         (into {} (map (juxt :id identity) value))))
+     [{:id :a, :children #{:b}}
+      {:id :b, :children #{:a}}])
+   ;; => ({:invariant/name :graph-is-acyclic?,
+   ;;      :invariant/value [{:id :b, :children #{:a}} {:id :a, :children #{:b}}],
+   ;;      ...})
+   ```
+
+   The error container will provide the detected cycle, as well as the relevant
+   edges within the `:invariant/error` key."
+  ([name edge-fn]
+   (acyclic name edge-fn (constantly identity)))
+  ([name edge-fn describe-fn]
+   (->Acyclic name edge-fn describe-fn)))
 
 ;; ## Run Function
 
