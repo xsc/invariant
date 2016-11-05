@@ -303,13 +303,13 @@
   "Generates an `Invariant` verifying that there are no cyclic properties
    within the element currently being verified. This needs two functions:
 
-   - `:edge-fn`: takes the state and the current value and produces a map of
+   - `edge-fn`: takes the state and the current value and produces a map of
      node IDs to a set of successor nodes,
-   - `:describe-fn`: takes the state and the current value and produces a
+   - `describe-fn`: takes the state and the current value and produces a
      function that maps node IDs to a more descriptive representation to
      be included in errors (defaults to returning the node ID itself).
 
-   `:edge-fn` should produce a map like the following, describing the edges of
+   `edge-fn` should produce a map like the following, describing the edges of
    a graph constructed from the value currently being verified:
 
    ```clojure
@@ -318,7 +318,7 @@
     :d #{:a}}
    ```
 
-   `:describe-fn` can be given to provide more information to errors (e.g. to
+   `describe-fn` can be given to provide more information to errors (e.g. to
    retain more of the original input than just the node ID). E.g., if the
    input is a seq of nodes akin to `{:id \"A\", :children #{...}}` one could
    retain the full values using:
