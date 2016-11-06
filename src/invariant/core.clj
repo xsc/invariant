@@ -176,6 +176,41 @@
 
 ;; ## Recursive Invariants
 
+(defmacro recursive-fn
+  "Generate a recursive `Invariant` bound to `self-sym` within the body.
+   `dispatch-form` has to produce a single-arity function (or a map) that will
+   be applied to the value currently being verified. Its result should be the
+   invariant to be verified against the value.
+
+   This can be used to, e.g., implement a recursive dispatch function in cases
+   where there is something place resembling a type system:
+
+   ```clojure
+   (invariant/recursive-fn
+     [self]
+     (comp
+       {\"Person\"  (person-invariant self)
+        \"Product\" (product-invariant self)}
+       :entity-type))
+   ```
+
+   "
+  [[self-sym] dispatch-form]
+  {:pre [(symbol? self-sym)]}
+  `(let [promise# (promise)
+         ~self-sym (bind
+                     (fn [~'_ value#]
+                       (@promise# value#)))
+         dispatch# ~dispatch-form]
+     (when-not (ifn? dispatch#)
+       (throw
+         (IllegalArgumentException.
+           ~(str "the body of 'recursive-fn' has to produce a function"
+                 "\ngiven: " (pr-str dispatch-form)))))
+     (deliver promise# dispatch#)
+     ~self-sym))
+
+
 (defmacro recursive
   "Generate a recursive invariant bound to `self-sym` within the body.
 
@@ -197,42 +232,9 @@
    ```
    "
   [[self-sym] invariant-form]
-  {:pre [(symbol? self-sym)]}
-  `(let [promise# (promise)
-         ~self-sym (bind (fn [~'_ ~'_] @promise#))
-         invariant# ~invariant-form]
-     (deliver promise# invariant#)
-     invariant#))
-
-(defmacro recursive-dispatch
-  "Generate a function that returns an `Invariant` for some dispatch value. The
-   function itself will be bound to `self-sym` within the body, so it can be
-   used recursively. `dispatch-form` has to be a map.
-
-   This can be useful to apply invariants to arbitrary nested structures when
-   there is something in place resembling a type system.
-
-   E.g. if there are people and products that reference each other, you might
-   want to recursively validate each entity by type:
-
-   ```clojure
-   (invariant/recursive-dispatch
-     [self]
-     {\"Person\"  (person-invariant self)
-      \"Product\" (product-invariant self)})
-   ```
-   "
-  [[self-sym] dispatch-form]
-  `(let [promise# (promise)
-         ~self-sym (fn [v#] (@promise# v#))
-         dispatch# ~dispatch-form]
-     (when-not (map? dispatch#)
-       (throw
-         (IllegalArgumentException.
-           ~(str "the body of 'recursive-dispatch' has to be a map."
-                 "\ngiven: " (pr-str dispatch-form)))))
-     (deliver promise# dispatch#)
-     dispatch#))
+  `(recursive-fn
+     [~self-sym]
+     (fn [~'_] ~invariant-form)))
 
 ;; ## Combinators
 
