@@ -9,6 +9,7 @@
              [cycles :refer [->Acyclic]]
              [dependency :refer [->Dependency ->RootDependency]]
              [each :refer [->Each]]
+             [error-context :refer [->ErrorContext]]
              [fail :refer [->Fail]]
              [fmap :refer [->FMap]]
              [is :refer [->Is]]
@@ -31,6 +32,33 @@
   "Generate an `Invariant` that will always produce an error."
   [name]
   (->Fail name))
+
+;; ## Error Context
+
+(defn with-error-context
+  "Generates an `Invariant` that attaches an error context to each invariant
+   error produced by `invariant`.
+
+   ```clojure
+   (-> (invariant/on [:fields ALL])
+       (invariant/each ...)
+       (invariant/with-error-context
+         (fn [_ {:keys [record-name]}]
+           {:record-name record-name})))
+   ```
+
+   The result of `error-context-fn` will be merged into each invariant error's
+   `:invariant/error-context` entry."
+  [invariant error-context-fn]
+  {:pre [(fn? error-context-fn)]}
+  (->ErrorContext invariant error-context-fn))
+
+(defn with-static-error-context
+  "Like [[with-error-context]] but merging a static map into any invariant
+   error's `:invariant/error-context` entry."
+  [invariant error-context]
+  {:pre [(or (nil? error-context) (map? error-context))]}
+  (with-error-context invariant (constantly error-context)))
 
 ;; ## Selectors
 
@@ -89,13 +117,9 @@
            (fn [{:keys [declared-variables]} n]
              (contains? declared-variables n)))))
    ```
-
-   If `describe-fn` is given, it will be used to generate additional data
-   for the invariant error container."
-  [name pred-fn & [describe-fn]]
-  (->Predicate name
-               pred-fn
-               (or describe-fn (constantly nil))))
+   "
+  [name pred-fn]
+  (->Predicate name pred-fn))
 
 (defn value
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
@@ -107,15 +131,10 @@
          (invariant/value :prefix-valid? #(string/starts-with? % \"var_\"))))
    ```
 
-   If `describe-fn` is given, it will be used to generate additional data
-   for the invariant error container.
-
    If you need the invariant state to decide on whether the invariant holds,
    use [[property]]."
-  [name pred-fn & [describe-fn]]
-  (->Predicate name
-               #(pred-fn %2)
-               (or describe-fn (constantly nil))))
+  [name pred-fn]
+  (->Predicate name #(pred-fn %2)))
 
 (defn state
   "Generates a predicate whose `pred-fn` will be called with the current state,
@@ -128,15 +147,10 @@
          (invariant/state :at-least-one? #(pos? (:count %)))))
    ```
 
-   If `describe-fn` is given, it will be used to generate additional data
-   for the invariant error container.
-
    If you need the values being verified to decide on whether the invariant
    holds, use [[property]]."
-  [name pred-fn & [describe-fn]]
-  (->Predicate name
-               (fn [state _] (pred-fn state))
-               (or describe-fn (constantly nil))))
+  [name pred-fn]
+  (->Predicate name (fn [state _] (pred-fn state))))
 
 ;; ## Conjunction
 

@@ -22,16 +22,18 @@
    - `:invariant/state`: the state of the invariant when failing,
    - `:invariant/path`: the path the invariant failed at,
    - `:invariant/value`: the value that could not be verified,
-   - `:invariant/error`: arbitrary, invariant-dependent error information.
+   - `:invariant/error-context`: an arbitrary, invariant-dependent error
+     context map.
    "
   ([name path state value]
    (->invariant-error name path state value nil))
   ([name path state value error]
+   {:pre [(or (nil? error) (map? error))]}
    (cond-> {:invariant/name  name
             :invariant/state state
             :invariant/path  path
             :invariant/value value}
-     error (assoc :invariant/error error))))
+     error (assoc :invariant/error-context error))))
 
 ;; ## Results
 
@@ -40,6 +42,18 @@
   [result1 result2]
   (-> result1
       (update :errors into (:errors result2))))
+
+(defn merge-error-context
+  [result context]
+  {:pre [(or (nil? context) (map? context))]}
+  (if context
+    (update result
+            :errors
+            (fn [errors]
+              (mapv
+                #(update % :invariant/error-context merge context)
+                errors)))
+    result))
 
 (defn invariant-holds
   "Create a result for [[run-invariant]] indicating successful resolution."
