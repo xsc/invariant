@@ -31,8 +31,8 @@
                              :when (contains? cycle k)]
                          [k (set/intersection v cycle)])
                        (into {}))
-        error-data {:cycle cycle
-                    :edges edges}]
+        error-data {:invariant/cycle cycle
+                    :invariant/edges edges}]
     (->invariant-error name path state elements error-data)))
 
 ;; ## Type

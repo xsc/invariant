@@ -1,30 +1,27 @@
 (ns invariant.core.unique
   (:require [invariant.core.protocols :refer :all]))
 
-(defn- generate-frequencies
+(defn- find-duplicates
   [{:keys [data]} unique-by]
-  (frequencies (map unique-by data)))
-
-(defn- unique?
-  [fq value]
-  (= (get fq value) 1))
+  (->> (group-by unique-by data)
+       (keep
+         (fn [[k vs]]
+           (when (next vs)
+             {:value      k
+              :duplicates vs})))))
 
 (defn- add-error
-  [{:keys [path state] :as result} name index element value]
-  (->> (->invariant-error name (conj path index) state value element)
-       (update result :errors conj)))
+  [{:keys [path state] :as result} name {:keys [value duplicates]}]
+  (let [error-data {:invariant/duplicate-value value}
+        error (->invariant-error name path state duplicates error-data)]
+    (update result :errors conj error)))
 
 (deftype Unique [invariant name unique-by]
   Invariant
   (run-invariant [_ path state data]
     (let [result (run-invariant invariant path state data)
-          fq (generate-frequencies result unique-by)]
-      (->> (:data result)
-           (map-indexed vector)
-           (reduce
-             (fn [result [index element]]
-               (let [value (unique-by element)]
-                 (if-not (unique? fq value)
-                   (add-error result name index element value)
-                   result)))
-             result)))))
+          duplicate-groups (find-duplicates result unique-by)]
+      (reduce
+        (fn [result duplicate-group]
+          (add-error result name duplicate-group))
+        result duplicate-groups))))
