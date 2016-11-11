@@ -52,3 +52,27 @@
    invariants."
   [data-spec & invariants]
   `(holds-spec-impl ~data-spec [~@invariants] (quote ~invariants) nil))
+
+;; ## Spec for Invariant Errors
+
+(s/def :invariant/error
+  (s/keys :req [:invariant/name
+                :invariant/state
+                :invariant/values
+                :invariant/path]
+          :opt [:invariant/error-context]))
+
+(s/def :invariant/name
+  any?)
+
+(s/def :invariant/values
+  (s/coll-of any?  :min-count 1))
+
+(s/def :invariant/state
+  map?)
+
+(s/def :invariant/path
+  sequential?)
+
+(s/def :invariant/error-context
+  map?)

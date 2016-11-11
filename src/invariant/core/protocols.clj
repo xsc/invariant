@@ -21,19 +21,21 @@
    - `:invariant/name`: the name of the failed invariant,
    - `:invariant/state`: the state of the invariant when failing,
    - `:invariant/path`: the path the invariant failed at,
-   - `:invariant/value`: the value that could not be verified,
+   - `:invariant/values`: the values that could not be verified,
    - `:invariant/error-context`: an arbitrary, invariant-dependent error
      context map.
    "
-  ([name path state value]
-   (->invariant-error name path state value nil))
-  ([name path state value error]
-   {:pre [(or (nil? error) (map? error))]}
-   (cond-> {:invariant/name  name
-            :invariant/state state
-            :invariant/path  path
-            :invariant/value value}
-     error (assoc :invariant/error-context error))))
+  ([name path state values]
+   (->invariant-error name path state values nil))
+  ([name path state values error-context]
+   {:pre [(or (nil? error-context)
+              (map? error-context))
+          (sequential? values)]}
+   (cond-> {:invariant/name   name
+            :invariant/state  state
+            :invariant/path   path
+            :invariant/values values}
+     error-context (assoc :invariant/error-context error-context))))
 
 ;; ## Results
 
@@ -44,14 +46,14 @@
       (update :errors into (:errors result2))))
 
 (defn merge-error-context
-  [result context]
-  {:pre [(or (nil? context) (map? context))]}
-  (if context
+  [result error-context]
+  {:pre [(or (nil? error-context) (map? error-context))]}
+  (if error-context
     (update result
             :errors
             (fn [errors]
               (mapv
-                #(update % :invariant/error-context merge context)
+                #(update % :invariant/error-context merge error-context)
                 errors)))
     result))
 
@@ -71,9 +73,10 @@
    :state  state})
 
 (defn invariant-failed
-  "Create a result for [[run-invariant]] indicating failed resolution."
+  "Create a result for [[run-invariant]] indicating failed resolution using
+   a single relevant value."
   ([name path state value]
    (invariant-failed name path state value nil))
-  ([name path state value error-data]
-   (->> [(->invariant-error name path state value error-data)]
+  ([name path state value error-context]
+   (->> [(->invariant-error name path state [value] error-context)]
         (invariant-failed* name path state value))))

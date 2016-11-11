@@ -32,5 +32,6 @@
                               :args [{:variable {:name "x"}}
                                      {:variable {:name "y"}}]}]})]
         (is (seq errors))
-        (is (= #{"x" "y"} (into #{} (map :invariant/value errors))))
+        (is (= #{["x"] ["y"]}
+               (into #{} (map :invariant/values errors))))
         (is (every? (comp #{#{"a" "b"}} :declared-variables :invariant/state) errors))))))
