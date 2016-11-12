@@ -1,4 +1,5 @@
 (ns invariant.debug
+  "Debug Mechanisms for Invariants"
   (:require [invariant.core.debug :refer [->Debug]]))
 
 (defn ^:private default-debug-fn

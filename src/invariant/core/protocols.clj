@@ -1,4 +1,5 @@
 (ns invariant.core.protocols
+  "Base Functionality for Invariants"
   (:require [invariant.potemkin :refer [defprotocol+]]
             [com.rpl.specter :as specter]))
 
@@ -46,6 +47,7 @@
       (update :errors into (:errors result2))))
 
 (defn merge-error-context
+  "Merge the given error context into each error of `result`."
   [result error-context]
   {:pre [(or (nil? error-context) (map? error-context))]}
   (if error-context
@@ -66,6 +68,8 @@
    :errors []})
 
 (defn invariant-failed*
+  "Create a result for [[run-invariant]] using a single relevant value and
+   a seq of errors."
   [name path state value errors]
   {:value  [value]
    :path   path

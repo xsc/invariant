@@ -1,4 +1,5 @@
 (ns invariant.spec
+  "Integration with `clojure.spec`."
   (:require [invariant.core :as invariant]
             [invariant.potemkin :refer [import-vars]]
             [clojure.spec.gen :as gen]
