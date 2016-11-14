@@ -62,6 +62,17 @@
 
 ;; ## Selectors
 
+(defn- abbrev-path
+  [path-form]
+  (vec
+    (keep
+      (fn [x]
+        (if (symbol? x)
+          (if (not= (name x) "ALL")
+            (symbol (name x)))
+          x))
+      path-form)))
+
 (defn on*
   "Generates an `Invariant` that uses the given specter path to collect
    all pieces of data the invariant should apply to. This is basically a
@@ -79,7 +90,7 @@
   ([invariant path path-form]
    {:pre [(sequential? path-form)]}
    (let [path (specter/comp-paths path)]
-     (->Selector invariant path path-form))))
+     (->Selector invariant path (abbrev-path path-form)))))
 
 (defmacro on
   "Generates an `Invariant` that uses the given specter path to collect
