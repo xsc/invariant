@@ -7,7 +7,7 @@
              [any :refer [->Any]]
              [bind :refer [->Bind]]
              [cycles :refer [->Acyclic]]
-             [dependency :refer [->Dependency ->RootDependency]]
+             [dependency :refer [->ReduceDependency ->FnDependency]]
              [each :refer [->Each]]
              [error-context :refer [->ErrorContext]]
              [fail :refer [->Fail]]
@@ -74,10 +74,12 @@
 
    [[on]] should be preferred since it will automatically generate `path-form`
    for you."
-  [path path-form]
-  {:pre [(sequential? path-form)]}
-  (let [path (specter/comp-paths path)]
-    (->Selector path path-form)))
+  ([path path-form]
+   (on* nil path path-form))
+  ([invariant path path-form]
+   {:pre [(sequential? path-form)]}
+   (let [path (specter/comp-paths path)]
+     (->Selector invariant path path-form))))
 
 (defmacro on
   "Generates an `Invariant` that uses the given specter path to collect
@@ -89,10 +91,26 @@
        (invariant/each ...))
    ```
 
+   Optionally, an inner invariant can be supplied in which case the selector
+   is run on its result. This lets you, e.g., collect state while stepping
+   through your data:
+
+   ```clojure
+   (-> (invariant/on [:body])
+       (invariant/collect-as :variables [:declarations ALL])
+       (invariant/on [:usages ALL])
+       ...)
+   ```
+
+   Here, you'll collect all declarations at `[:body :declarations ALL]` before
+   continueing with `[:body :usages ALL]`.
+
    If you need to generate a selector dynamically or from a path stored within
    a var/binding, use [[on*]]."
-  [path]
-  `(on* ~path (quote ~path)))
+  ([invariant path]
+   `(on* ~invariant ~path (quote ~path)))
+  ([path]
+   `(on* ~path (quote ~path))))
 
 (let [self-path (on* specter/STAY [])]
   (defn on-current-value
@@ -239,12 +257,12 @@
 
 (defn as
   "Generates an `Invariant` that uses the given specter path, reduce fn
-   and value to attach a key to the invariant state. Note that `as` references
-   the input data, not the elements produced by a selector like [[on]].
+   and value to attach a key to the invariant state, based on the current
+   value.
 
    ```clojure
-   (-> (invariant/on [:usages ALL :name])
-       (invariant/as :declared-variables [:declarations ALL :name] conj #{})
+   (-> (invariant/as :declared-variables [:declarations ALL :name] conj #{})
+       (invariant/on [:usages ALL :name])
        ...)
    ```
 
@@ -255,34 +273,47 @@
    {:declared-variables {\"a\", \"b\", \"c\"}}
    ```
 
-   Alternatively, you can also run a function directly on the input data:
+   Alternatively, you can also run a function directly on a seq of input values
+   (i.e. even if you're operating on the top-level value you'll still get a
+   single-element seq):
 
    ```clojure
-   (-> (invariant/on [:usages ALL :name])
-       (invariant/as :body-count (comp count :body))
+   (-> (invariant/as :body-count (comp count :body first))
+       (invariant/on [:usages ALL :name])
        ...)
    ```
-   "
+
+   Both variants allow an inner invariant to be supplied, in which case the
+   state will be computed from the selected values."
   ([invariant state-key path reduce-fn initial-value]
    (let [path (specter/comp-paths path)]
-     (->Dependency invariant state-key path reduce-fn initial-value)))
+     (->ReduceDependency invariant state-key path reduce-fn initial-value)))
+  ([state-key path reduce-fn initial-value]
+   (as nil state-key path reduce-fn initial-value))
   ([invariant state-key f]
-   (->RootDependency invariant state-key f)))
+   (->FnDependency invariant state-key f))
+  ([state-key f]
+   (as nil state-key f)))
 
 (defn count-as
   "Like [[as]], storing the number of elements at the given specter path
    at the desired key within the invariant state."
-  [invariant state-key path]
-  (as invariant state-key path (fn [c _] (inc c)) 0))
+  ([state-key path]
+   (count-as nil state-key path))
+  ([invariant state-key path]
+   (as invariant state-key path (fn [c _] (inc c)) 0)))
 
 (defn collect-as
   "Like [[as]], collecting all elements at the given specter path at the
    desired key within the invariant state. If `:unique?` (default: `true`) is
    set the result will be a set."
-  [invariant state-key path
-   & [{:keys [unique?] :or {unique? true}}]]
-  (let [initial-collection (if unique? #{} [])]
-    (as invariant state-key path conj initial-collection)))
+  ([state-key path]
+   (collect-as nil state-key path))
+  ([invariant state-key path]
+   (collect-as invariant state-key path {}))
+  ([invariant state-key path {:keys [unique?] :or {unique? true}}]
+   (let [initial-collection (if unique? #{} [])]
+     (as invariant state-key path conj initial-collection))))
 
 ;; ### Invariant Application
 

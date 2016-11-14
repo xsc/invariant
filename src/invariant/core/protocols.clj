@@ -62,7 +62,7 @@
 (defn invariant-holds
   "Create a result for [[run-invariant]] indicating successful resolution."
   [path state value]
-  {:value  [value]
+  {:data   [value]
    :path   path
    :state  state
    :errors []})
@@ -71,7 +71,7 @@
   "Create a result for [[run-invariant]] using a single relevant value and
    a seq of errors."
   [name path state value errors]
-  {:value  [value]
+  {:data   [value]
    :path   path
    :errors errors
    :state  state})

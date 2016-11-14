@@ -2,10 +2,12 @@
   (:require [invariant.core.protocols :refer :all]
             [com.rpl.specter :as specter]))
 
-(deftype Selector [path path-form]
+(deftype Selector [invariant path path-form]
   Invariant
   (run-invariant [_ path' state value]
-    {:data   (into [] (specter/traverse path value))
-     :path   (into path' path-form)
-     :state  state
-     :errors []}))
+    (let [result (if invariant
+                   (run-invariant invariant path' state value)
+                   (invariant-holds path' state value))]
+      (-> result
+          (update :path into path-form)
+          (update :data #(into [] (specter/traverse [specter/ALL path] %)))))))

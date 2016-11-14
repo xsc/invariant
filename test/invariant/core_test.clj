@@ -6,8 +6,8 @@
 
 (deftest t-simple-invariant
   (let [invariant
-        (-> (invariant/on [:body (walker :variable) :variable (must :name)])
-            (invariant/collect-as :declared-variables [:declarations ALL :name])
+        (-> (invariant/collect-as :declared-variables [:declarations ALL :name])
+            (invariant/on [:body (walker :variable) :variable (must :name)])
             (invariant/each
               (invariant/property
                 :validator/variables-declared

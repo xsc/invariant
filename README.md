@@ -3,8 +3,8 @@
 __[Documentation](https://xsc.github.io/invariant/)__
 
 __invariant__ is a library providing semantic invariants on Clojure data
-structures. It is based on the excellent [specter][specter] library and
-will integrate nicely with [clojure.spec][cljspec].
+structures. It uses the excellent [specter][specter] library to describe
+paths into arbitrary data and can integrated with [clojure.spec][cljspec].
 
 [![Build Status](https://travis-ci.org/xsc/invariant.svg?branch=master)](https://travis-ci.org/xsc/invariant)
 [![Clojars Artifact](https://img.shields.io/clojars/v/invariant.svg)](https://clojars.org/invariant)
@@ -28,8 +28,8 @@ subvector's elements sum up to the same value.
 
 ```clojure
 (def sums-identical?
-  (-> (invariant/on [ALL])
-      (invariant/as :expected-sum #(apply + (first %)))
+  (-> (invariant/as :expected-sum [FIRST ALL] + 0)
+      (invariant/on [ALL])
       (invariant/each
         (invariant/property
           :matches-expected-sum?
@@ -64,8 +64,8 @@ Or invariants describing the relationship between parts of the data:
 
 ```clojure
 (def all-variables-have-been-declared
-  (-> (invariant/on [:body (walker :variable) :variable (must :name)])
-      (invariant/as :declared-variables [:declarations ALL :name] conj #{})
+  (-> (invariant/collect-as :declared-variables [:declarations ALL :name])
+      (invariant/on [:body (walker :variable) :variable (must :name)])
       (invariant/each
         (invariant/property
           :variable-declared?
@@ -75,7 +75,6 @@ Or invariants describing the relationship between parts of the data:
 
 See the [auto-generated documentation](https://xsc.github.io/invariant/) for
 more details.
-
 
 [specter]: https://github.com/nathanmarz/specter
 [cljspec]: http://clojure.org/guides/spec

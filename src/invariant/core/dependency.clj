@@ -2,16 +2,27 @@
   (:require [invariant.core.protocols :refer :all]
             [com.rpl.specter :as specter]))
 
-(deftype Dependency [invariant k path reduce-fn initial-value]
-  Invariant
-  (run-invariant [_ path' state value]
-    (let [result (run-invariant invariant path' state value)]
-      (->> (specter/traverse path value)
-           (reduce reduce-fn initial-value)
-           (assoc-in result [:state k])))))
+(defn- reduce-for-state
+  [path reduce-fn initial-value value]
+  (->> (specter/traverse [specter/ALL path] value)
+       (reduce reduce-fn initial-value)))
 
-(deftype RootDependency [invariant k f]
+(deftype ReduceDependency [invariant k path reduce-fn initial-value]
   Invariant
   (run-invariant [_ path' state value]
-    (let [result (run-invariant invariant path' state value)]
-      (assoc-in result [:state k] (f value)))))
+    (let [{:keys [data] :as result}
+          (if invariant
+            (run-invariant invariant path' state value)
+            (invariant-holds path' state value))
+          state-value (reduce-for-state path reduce-fn initial-value data)]
+      (assoc-in result [:state k] state-value))))
+
+(deftype FnDependency [invariant k f]
+  Invariant
+  (run-invariant [_ path' state value]
+    (let [{:keys [data] :as result}
+          (if invariant
+            (run-invariant invariant path' state value)
+            (invariant-holds path' state value))
+          state-value (f data)]
+      (assoc-in result [:state k] state-value))))
