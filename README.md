@@ -4,7 +4,8 @@ __[Documentation](https://xsc.github.io/invariant/)__
 
 __invariant__ is a library providing semantic invariants on Clojure data
 structures. It uses the excellent [specter][specter] library to describe
-paths into arbitrary data and can integrated with [clojure.spec][cljspec].
+paths into arbitrary data and allows for integration with
+[clojure.spec][cljspec].
 
 [![Build Status](https://travis-ci.org/xsc/invariant.svg?branch=master)](https://travis-ci.org/xsc/invariant)
 [![Clojars Artifact](https://img.shields.io/clojars/v/invariant.svg)](https://clojars.org/invariant)
@@ -78,6 +79,45 @@ more details.
 
 [specter]: https://github.com/nathanmarz/specter
 [cljspec]: http://clojure.org/guides/spec
+
+## clojure.spec
+
+You can create a spec from an invariant using `invariant.spec/holds?`, e.g. for
+our `sums-identical?` defined above:
+
+```clojure
+(require '[invariant.spec :refer [holds?]]
+         '[clojure.spec :as s])
+
+(s/def ::int-coll
+  (s/coll-of integer? :min-count 1, :max-count 3))
+
+(s/def ::int-colls-sums-identical
+  (holds? (s/coll-of ::int-coll)
+          sums-identical?))
+```
+
+This allows you to find all invalid `::int-coll`s:
+
+```clojure
+(sexplain ::int-colls-sums-identical [[1 2] [2 3] [4 -1] []])
+;; val: [2 3] fails spec: :user/int-colls-sums-identical at: [1] predicate: (invariant-holds? :matches-expected-sum? %)
+;; val: [] fails spec: :user/int-colls-sums-identical at: [3] predicate: (invariant-holds? :matches-expected-sum? %)
+;; => nil
+```
+
+Test data generation works, although I doubt that for most invariants you'll
+have a result wihin 100 tries:
+
+```clojure
+ (s/exercise ::int-colls-sums-identical)
+;; => ([[[7]] [[7]]] [[] []] [[[6 0 71]] [[6 0 71]]] [[] []] [[[-2]] [[-2]]]
+;;     [[] []] [[] []] [[[51 -2 0]] [[51 -2 0]]] [[[-37 -16]] [[-37 -16]]]
+;;     [[[-2022]] [[-2022]]])
+```
+
+Note that, during validation, the invariant will only be run if a value matches
+the attached spec.
 
 ## License
 
