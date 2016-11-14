@@ -17,7 +17,7 @@
                           {:name "c"}]})]
         (is (empty? errors))
         (is (= [{:name "a"} {:name "b"} {:name "c"}] data))
-        (is (= [:elements 'ALL] path))
+        (is (= [:elements] path))
         (is (= {} state))))))
 
 (deftest t-nested-selector-invariant
@@ -34,5 +34,5 @@
                           {:name "c"}]})]
         (is (empty? errors))
         (is (= ["a" "b" "c"] data))
-        (is (= [:elements 'ALL :name] path))
+        (is (= [:elements :name] path))
         (is (= {} state))))))
