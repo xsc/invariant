@@ -41,9 +41,13 @@
     (gen* [_ overrides path rmap]
       (if gfn
         (gfn)
-        (let [base-gen (s/gen spec)]
-          ;; TODO: Build a Generator from Invariants
-          base-gen)))
+        (let [s (s/specize* spec)
+              base-gen (s/gen* s overrides path rmap)]
+          (gen/such-that
+            (fn [value]
+              (every? #(invariant/holds? % value) invariants))
+            base-gen
+            100))))
     (with-gen* [_ gfn]
       (holds-spec-impl spec invariants forms gfn))
     (describe* [_]

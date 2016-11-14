@@ -1,5 +1,5 @@
 (defproject invariant "0.1.0-SNAPSHOT"
-  :description "Semantic Invariants on Clojure Data Structures"
+  :description "Invariants on Clojure Data Structures"
   :url "https://github.com/xsc/invariant"
   :license {:name "MIT License"
             :url "https://opensource.org/licenses/MIT"
@@ -8,7 +8,8 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
                  [com.rpl/specter "0.13.1"]]
   :profiles
-  {:codox {:dependencies [[codox-theme-rdash "0.1.1"]]
+  {:dev   {:dependencies [[org.clojure/test.check "0.9.0"]]}
+   :codox {:dependencies [[codox-theme-rdash "0.1.1"]]
            :plugins [[lein-codox "0.10.0"]]
            :codox {:project {:name "invariant"}
                    :metadata {:doc/format :markdown}
