@@ -24,17 +24,20 @@
           v)))
     (unform* [_ x]
       (s/unform spec x))
-    (explain* [_ path via in x]
-      (or (s/explain* (s/specize* spec) path via in x)
+    (explain* [_ path' via in x]
+      (or (seq (s/explain* (s/specize* spec) path' via in x))
           (->> invariants
                (mapcat #(invariant/check % x))
-               (mapv
-                 (fn [error]
-                   {:path (into (vec path) (:invariant/path error))
-                    :pred (list 'invariant/holds? (:invariant/name error) '%)
-                    :val  (:invariant/value error)
-                    :via  via
-                    :in   in})))))
+               (mapcat
+                 (fn [{:keys [invariant/values
+                              invariant/path
+                              invariant/name]}]
+                   (for [value values]
+                     {:path (into (vec path') path)
+                      :pred (list 'invariant-holds? name '%)
+                      :val  value
+                      :via  via
+                      :in   in}))))))
     (gen* [_ overrides path rmap]
       (if gfn
         (gfn)
