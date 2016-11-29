@@ -26,3 +26,13 @@
             (invariant-holds path' state value))
           state-value (f data)]
       (assoc-in result [:state k] state-value))))
+
+(deftype FirstDependency [invariant k path]
+  Invariant
+  (run-invariant [_ path' state value]
+    (let [{:keys [data] :as result}
+          (if invariant
+            (run-invariant invariant path' state value)
+            (invariant-holds path' state value))
+          state-value (specter/select-one [specter/ALL path] data)]
+      (assoc-in result [:state k] state-value))))

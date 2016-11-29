@@ -7,7 +7,10 @@
              [any :refer [->Any]]
              [bind :refer [->Bind]]
              [cycles :refer [->Acyclic]]
-             [dependency :refer [->ReduceDependency ->FnDependency]]
+             [dependency
+              :refer [->FirstDependency
+                      ->FnDependency
+                      ->ReduceDependency]]
              [each :refer [->Each]]
              [error-context :refer [->ErrorContext]]
              [fail :refer [->Fail]]
@@ -325,6 +328,14 @@
   ([invariant state-key path {:keys [unique?] :or {unique? true}}]
    (let [initial-collection (if unique? #{} [])]
      (as invariant state-key path conj initial-collection))))
+
+(defn ^{:added "0.1.1"} first-as
+  "Like [[as]], storing the first element currently being verified under the
+   given key."
+  ([state-key path]
+   (first-as nil state-key path))
+  ([invariant state-key path]
+   (->FirstDependency invariant state-key path)))
 
 ;; ### Invariant Application
 
