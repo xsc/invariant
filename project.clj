@@ -1,4 +1,4 @@
-(defproject invariant "0.1.1"
+(defproject invariant "0.1.2-SNAPSHOT"
   :description "Invariants on Clojure Data Structures"
   :url "https://github.com/xsc/invariant"
   :license {:name "MIT License"
