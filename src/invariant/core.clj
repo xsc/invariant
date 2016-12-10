@@ -8,8 +8,8 @@
              [bind :refer [->Bind]]
              [cycles :refer [->Acyclic]]
              [dependency
-              :refer [->FirstDependency
-                      ->FnDependency
+              :refer [->ComputedDependency
+                      ->FirstDependency
                       ->ReduceDependency]]
              [each :refer [->Each]]
              [error-context :refer [->ErrorContext]]
@@ -287,27 +287,13 @@
    {:declared-variables {\"a\", \"b\", \"c\"}}
    ```
 
-   Alternatively, you can also run a function directly on a seq of input values
-   (i.e. even if you're operating on the top-level value you'll still get a
-   single-element seq):
-
-   ```clojure
-   (-> (invariant/as :body-count (comp count :body first))
-       (invariant/on [:usages ALL :name])
-       ...)
-   ```
-
-   Both variants allow an inner invariant to be supplied, in which case the
-   state will be computed from the selected values."
-  ([invariant state-key path reduce-fn initial-value]
-   (let [path (specter/comp-paths path)]
-     (->ReduceDependency invariant state-key path reduce-fn initial-value)))
+   An inner invariant can be supplied, in which case the state will be computed
+   from the selected values."
   ([state-key path reduce-fn initial-value]
    (as nil state-key path reduce-fn initial-value))
-  ([invariant state-key f]
-   (->FnDependency invariant state-key f))
-  ([state-key f]
-   (as nil state-key f)))
+  ([invariant state-key path reduce-fn initial-value]
+   (let [path (specter/comp-paths path)]
+     (->ReduceDependency invariant state-key path reduce-fn initial-value))))
 
 (defn count-as
   "Like [[as]], storing the number of elements at the given specter path
@@ -336,6 +322,38 @@
    (first-as nil state-key path))
   ([invariant state-key path]
    (->FirstDependency invariant state-key path)))
+
+(defn ^{:added "0.1.2"} compute-as
+  "Like [[as]], computing a value applying `f` to the current state and all
+   elements matching `path` and storing it under the given key.
+
+   ```clojure
+   (-> (invariant/as :name->dependencies ...)
+       (invariant/on [:elements ALL])
+       (invariant/compute-as
+         :current-dependencies
+         (fn [{:keys [name->dependencies]} [name]]
+           (name->dependencies name))
+         [:name])
+       ...)
+   ```
+
+   The above example will:
+
+   - create `:name->dependencies` in the state by analyzing the top-level value,
+   - iterate over each value in `:elements`,
+   - create `current-dependencies` in the state by looking it up in the
+     previously created `:name->dependencies`.
+   "
+  ([state-key f]
+   (compute-as nil state-key f nil))
+  ([invariant-or-state-key b c]
+   (if (and invariant-or-state-key
+            (satisfies? p/Invariant invariant-or-state-key))
+     (compute-as invariant-or-state-key b c nil)
+     (compute-as nil invariant-or-state-key b c)))
+  ([invariant state-key f path]
+   (->ComputedDependency invariant state-key f path)))
 
 ;; ### Invariant Application
 
