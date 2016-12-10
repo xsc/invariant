@@ -323,8 +323,13 @@
   ([invariant state-key path]
    (->FirstDependency invariant state-key path)))
 
-(defn ^{:added "0.1.2"} compute-as
-  "Like [[as]], computing a value applying `f` to the current state and all
+(def ^{:added "0.1.2"
+       :arglists '([state-key f]
+                   [state-key f path]
+                   [invariant state-key f]
+                   [invariant state-key f path])}
+  compute-as
+  "Like [[as]], computing a value by applying `f` to the current state and all
    elements matching `path` and storing it under the given key.
 
    ```clojure
@@ -345,15 +350,16 @@
    - create `current-dependencies` in the state by looking it up in the
      previously created `:name->dependencies`.
    "
-  ([state-key f]
-   (compute-as nil state-key f nil))
-  ([invariant-or-state-key b c]
-   (if (and invariant-or-state-key
-            (satisfies? p/Invariant invariant-or-state-key))
-     (compute-as invariant-or-state-key b c nil)
-     (compute-as nil invariant-or-state-key b c)))
-  ([invariant state-key f path]
-   (->ComputedDependency invariant state-key f path)))
+  (fn
+    ([state-key f]
+     (compute-as nil state-key f nil))
+    ([invariant-or-state-key b c]
+     (if (and invariant-or-state-key
+              (satisfies? p/Invariant invariant-or-state-key))
+       (compute-as invariant-or-state-key b c nil)
+       (compute-as nil invariant-or-state-key b c)))
+    ([invariant state-key f path]
+     (->ComputedDependency invariant state-key f path))))
 
 ;; ### Invariant Application
 
