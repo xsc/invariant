@@ -36,3 +36,20 @@
         (is (= ["a" "b" "c"] data))
         (is (= [:elements :name] path))
         (is (= {} state))))))
+
+(deftest t-computed-selector
+  (let [all-elements #(mapcat :elements %2)
+        invariant (invariant/on-values all-elements)]
+    (testing "invariant implementation."
+      (is (satisfies? p/Invariant invariant)))
+    (testing "selection."
+      (let [{:keys [data errors path state]}
+            (invariant/run
+              invariant
+              {:elements [{:name "a"}
+                          {:name "b"}
+                          {:name "c"}]})]
+        (is (empty? errors))
+        (is (= [{:name "a"} {:name "b"} {:name "c"}] data))
+        (is (= ['all-elements] path))
+        (is (= {} state))))))

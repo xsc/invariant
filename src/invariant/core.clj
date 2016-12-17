@@ -17,7 +17,7 @@
              [fmap :refer [->FMap]]
              [is :refer [->Is]]
              [predicate :refer [->Predicate]]
-             [selector :refer [->Selector]]
+             [selector :refer [->ComputedSelector ->Selector]]
              [unique :refer [->Unique]]
              [protocols :as p]]
             [com.rpl.specter :as specter]))
@@ -133,6 +133,25 @@
      elements."
     []
     self-path))
+
+(defn on-values*
+  "Generates an `Invariant` that will run `selector-fn` on the invariant state
+   and the seq of elements currently being verified, replacing the latter with
+   the produced result."
+  [invariant selector-fn path-form]
+  (->ComputedSelector invariant selector-fn path-form))
+
+(defmacro on-values
+  "Generates an `Invariant` that will run `selector-fn` on the invariant state
+   and the seq of elements currently being verified, replacing the latter with
+   the produced result.
+
+   This behaves like [[on]] but uses a function to directly generate the values
+   to verify."
+  ([selector-fn]
+   `(on-values* nil ~selector-fn (quote ~selector-fn)))
+  ([invariant selector-fn]
+   `(on-values* ~invariant ~selector-fn (quote ~selector-fn))))
 
 ;; ## Predicates
 

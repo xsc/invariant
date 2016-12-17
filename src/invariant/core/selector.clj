@@ -11,3 +11,13 @@
       (-> result
           (update :path into path-form)
           (update :data #(into [] (specter/traverse [specter/ALL path] %)))))))
+
+(deftype ComputedSelector [invariant selector-fn path-form]
+  Invariant
+  (run-invariant [_ path state value]
+    (let [result (if invariant
+                   (run-invariant invariant path state value)
+                   (invariant-holds path state value))]
+      (-> result
+          (update :path conj path-form)
+          (update :data #(into [] (selector-fn state %)))))))
