@@ -70,7 +70,7 @@
 (defn invariant-failed*
   "Create a result for [[run-invariant]] using a single relevant value and
    a seq of errors."
-  [name path state value errors]
+  [path state value errors]
   {:data   [value]
    :path   path
    :errors errors
@@ -83,4 +83,4 @@
    (invariant-failed name path state value nil))
   ([name path state value error-context]
    (->> [(->invariant-error name path state [value] error-context)]
-        (invariant-failed* name path state value))))
+        (invariant-failed* path state value))))

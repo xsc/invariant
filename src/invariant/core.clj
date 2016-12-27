@@ -16,7 +16,7 @@
              [fail :refer [->Fail]]
              [fmap :refer [->FMap]]
              [is :refer [->Is]]
-             [predicate :refer [->Predicate]]
+             [predicate :refer [->Predicate ->SeqPredicate]]
              [selector :refer [->ComputedSelector ->Selector]]
              [unique :refer [->Unique]]
              [protocols :as p]]
@@ -134,14 +134,14 @@
     []
     self-path))
 
-(defn on-values*
+(defn ^{:added "0.1.3"} on-values*
   "Generates an `Invariant` that will run `selector-fn` on the invariant state
    and the seq of elements currently being verified, replacing the latter with
    the produced result."
   [invariant selector-fn path-form]
   (->ComputedSelector invariant selector-fn path-form))
 
-(defmacro on-values
+(defmacro ^{:added "0.1.3"} on-values
   "Generates an `Invariant` that will run `selector-fn` on the invariant state
    and the seq of elements currently being verified, replacing the latter with
    the produced result.
@@ -172,6 +172,14 @@
   [name pred-fn]
   (->Predicate name pred-fn))
 
+(defn ^{:added "0.1.3"} seq-property
+  "Behaves like [[property]] but expects each element currently being verified
+   to be a seq.
+
+   Invariant errors will contain the input seq as their `:invariant/values`."
+  [name pred-fn]
+  (->SeqPredicate name pred-fn))
+
 (defn value
   "Generates a _stateless_ predicate whose `pred-fn` will be called with the
    value currently being verified.
@@ -186,6 +194,14 @@
    use [[property]]."
   [name pred-fn]
   (->Predicate name #(pred-fn %2)))
+
+(defn ^{:added "0.1.3"} values
+  "Behaves like [[value]] but expectes each element currently being verified to
+   be a seq.
+
+   Invariant errors will contain the input seq as their `:invariant/values`."
+  [name pred-fn]
+  (->SeqPredicate name #(pred-fn %2)))
 
 (defn state
   "Generates a predicate whose `pred-fn` will be called with the current state,

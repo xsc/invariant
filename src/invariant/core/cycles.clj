@@ -46,5 +46,5 @@
           (->> (for [cycle cycles
                      :let [elements (mapv node->element cycle)]]
                  (cycle->error name path state node->successors cycle elements))
-               (invariant-failed* name path state value)))
+               (invariant-failed* path state value)))
         (invariant-holds path state value)))))
