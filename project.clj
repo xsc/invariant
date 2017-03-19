@@ -6,7 +6,7 @@
             :year 2016
             :key "mit"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-                 [com.rpl/specter "0.13.2"]]
+                 [com.rpl/specter "1.0.0"]]
   :profiles
   {:dev   {:dependencies [[org.clojure/test.check "0.9.0"]]}
    :codox {:dependencies [[codox-theme-rdash "0.1.1"]]
