@@ -100,7 +100,7 @@ our `sums-identical?` defined above:
 This allows you to find all invalid `::int-coll`s:
 
 ```clojure
-(sexplain ::int-colls-sums-identical [[1 2] [2 3] [4 -1] []])
+(s/explain ::int-colls-sums-identical [[1 2] [2 3] [4 -1] []])
 ;; val: [2 3] fails spec: :user/int-colls-sums-identical at: [1] predicate: (invariant-holds? :matches-expected-sum? %)
 ;; val: [] fails spec: :user/int-colls-sums-identical at: [3] predicate: (invariant-holds? :matches-expected-sum? %)
 ;; => nil
